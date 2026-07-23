@@ -1,0 +1,4 @@
+gtts
+pyttsx3
+edge-tts
+ttkbootstrap

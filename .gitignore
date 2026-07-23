@@ -1,0 +1,18 @@
+# Portable Python Environment
+bin/
+python-*.zip
+get-pip.py
+
+# Pythonの一時ファイル・キャッシュ
+__pycache__/
+core/__pycache__/
+*.pyc
+*.pyo
+
+# 生成された音声ファイル
+*.mp3
+*.wav
+
+# デバッグ・ログ・不要なスクリプト
+*.log
+create_bat.py
