@@ -26,8 +26,8 @@ class TTSApp:
         self._after_id = None  # テキスト変更検知のタイマー
         self.file_text = None  # 読み込んだファイルの内容を保持する変数
         
-        self.load_sanitize_rules()
         self.create_widgets()
+        self.load_sanitize_rules()
 
     def create_widgets(self):
         # --- 1. エンジン選択エリア ---
@@ -330,15 +330,17 @@ class TTSApp:
                     json.dump(default_rules, f, ensure_ascii=False, indent=4)
                 self.sanitize_rules = default_rules
             except Exception as e:
-                print(f"ルールの自動生成に失敗しました: {e}")
                 self.sanitize_rules = default_rules
+                if hasattr(self, 'error_area'):
+                    self._show_error_in_app("ルールの自動生成に失敗しました", str(e))
         else:
             try:
                 with open(self.rules_path, "r", encoding="utf-8") as f:
                     self.sanitize_rules = json.load(f)
             except Exception as e:
-                print(f"ルールの読み込みに失敗しました: {e}")
                 self.sanitize_rules = default_rules
+                if hasattr(self, 'error_area'):
+                    self._show_error_in_app("ルールの読み込みに失敗しました (JSON構文エラー等)", f"{e}\n※デフォルトのルールを適用して続行します。")
 
     def sanitize_text(self, text):
         rules = self.sanitize_rules
@@ -369,7 +371,8 @@ class TTSApp:
                 if pattern:
                     text = re.sub(pattern, replacement, text)
             except Exception as e:
-                print(f"正規表現エラー ({pattern}): {e}")
+                if hasattr(self, 'error_area'):
+                    self._show_error_in_app("サニタイズ正規表現エラー", f"パターン '{pattern}' でエラーが発生しました: {e}")
                 
         # 5. 単純な文字列置換
         for rule in rules.get("string_replacements", []):

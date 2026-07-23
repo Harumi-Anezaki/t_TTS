@@ -1,0 +1,42 @@
+{
+    "remove_urls": true,
+    "escape_ssml": true,
+    "remove_emojis": true,
+    "compress_spaces_and_newlines": true,
+    "regex_replacements": [
+        {
+            "pattern": "[\\*＊_＿\\^＾\\\\￥]",
+            "replacement": ""
+        },
+        {
+            "pattern": "[~〜]",
+            "replacement": ""
+        },
+        {
+            "pattern": "[/／|｜]",
+            "replacement": "、"
+        },
+        {
+            "pattern": "※",
+            "replacement": "注意、"
+        },
+        {
+            "pattern": "[\\u200B-\\u200D\\uFEFF]",
+            "replacement": ""
+        },
+        {
+            "pattern": "【|】|〔|〕|［|］|（|）|『|』",
+            "replacement": "、"
+        },
+        {
+            "pattern": "\\(.*?\\)",
+            "replacement": ""
+        }
+    ],
+    "string_replacements": [
+        {
+            "target": "@",
+            "replacement": ""
+        }
+    ]
+}
