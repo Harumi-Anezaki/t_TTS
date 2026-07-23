@@ -11,6 +11,9 @@ from gtts import gTTS
 from io import BytesIO
 import pyttsx3
 import edge_tts  # ★新エンジン追加！
+import os
+import sys
+import json
 
 class TTSApp:
     def __init__(self, root):
@@ -23,6 +26,7 @@ class TTSApp:
         self._after_id = None  # テキスト変更検知のタイマー
         self.file_text = None  # 読み込んだファイルの内容を保持する変数
         
+        self.load_sanitize_rules()
         self.create_widgets()
 
     def create_widgets(self):
@@ -292,13 +296,110 @@ class TTSApp:
             
         return chunks
 
+    def load_sanitize_rules(self):
+        # exe化(PyInstallerなど)された場合でも、実行ファイルと同じ階層にファイルを作成するためのポータビリティ対応
+        if getattr(sys, 'frozen', False):
+            script_dir = os.path.dirname(sys.executable)
+        else:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            
+        self.rules_path = os.path.join(script_dir, "sanitize_rules.json")
+        
+        default_rules = {
+            "remove_urls": True,
+            "escape_ssml": True,
+            "remove_emojis": True,
+            "compress_spaces_and_newlines": True,
+            "regex_replacements": [
+                {"pattern": r"[\*＊_＿\^＾\\￥]", "replacement": ""},
+                {"pattern": r"[~〜]", "replacement": ""},
+                {"pattern": r"[/／|｜]", "replacement": "、"},
+                {"pattern": r"※", "replacement": "注意、"},
+                {"pattern": r"[\u200B-\u200D\uFEFF]", "replacement": ""},
+                {"pattern": r"【|】|〔|〕|［|］|（|）|『|』", "replacement": "、"},
+                {"pattern": r"\(.*?\)", "replacement": ""}
+            ],
+            "string_replacements": [
+                {"target": "@", "replacement": ""}
+            ]
+        }
+        
+        if not os.path.exists(self.rules_path):
+            try:
+                with open(self.rules_path, "w", encoding="utf-8") as f:
+                    json.dump(default_rules, f, ensure_ascii=False, indent=4)
+                self.sanitize_rules = default_rules
+            except Exception as e:
+                print(f"ルールの自動生成に失敗しました: {e}")
+                self.sanitize_rules = default_rules
+        else:
+            try:
+                with open(self.rules_path, "r", encoding="utf-8") as f:
+                    self.sanitize_rules = json.load(f)
+            except Exception as e:
+                print(f"ルールの読み込みに失敗しました: {e}")
+                self.sanitize_rules = default_rules
+
+    def sanitize_text(self, text):
+        rules = self.sanitize_rules
+        
+        # 1. URLの除去
+        if rules.get("remove_urls", True):
+            text = re.sub(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", "", text)
+            
+        # 2. SSMLエスケープ
+        if rules.get("escape_ssml", True):
+            # 完全なエスケープよりも、誤認を防ぐための削除または置換が効果的
+            text = text.replace("&", "アンド")
+            text = text.replace("<", "")
+            text = text.replace(">", "")
+            text = text.replace('"', "")
+            text = text.replace("'", "")
+            
+        # 3. 絵文字の除去 (Unicodeブロック指定の簡易版)
+        if rules.get("remove_emojis", True):
+            # サロゲートペアや一般的な絵文字の範囲を大まかに除去
+            text = re.sub(r'[\U00010000-\U0010ffff]', '', text)
+
+        # 4. 正規表現による置換
+        for rule in rules.get("regex_replacements", []):
+            try:
+                pattern = rule.get("pattern", "")
+                replacement = rule.get("replacement", "")
+                if pattern:
+                    text = re.sub(pattern, replacement, text)
+            except Exception as e:
+                print(f"正規表現エラー ({pattern}): {e}")
+                
+        # 5. 単純な文字列置換
+        for rule in rules.get("string_replacements", []):
+            target = rule.get("target", "")
+            replacement = rule.get("replacement", "")
+            if target:
+                text = text.replace(target, replacement)
+                
+        # 6. 空白と改行の圧縮
+        if rules.get("compress_spaces_and_newlines", True):
+            # 連続する改行を1つに
+            text = re.sub(r'\n+', '\n', text)
+            # 連続する空白を1つに
+            text = re.sub(r'[ 　]+', ' ', text)
+            
+        return text.strip()
+
     # --- ロジック: 実行処理の開始 ---
     def start_processing(self):
+        # 毎回実行時に最新のルールを読み込むことで、アプリ再起動なしでルール変更を反映
+        self.load_sanitize_rules()
+        
         # ファイルが選択されていればそれを優先、なければテキストエリアから取得
         if self.file_text is not None:
             text = self.file_text.strip()
         else:
             text = self.text_area.get("1.0", "end-1c").strip()
+            
+        # ★ サニタイズ処理の実行
+        text = self.sanitize_text(text)
             
         if not text:
             messagebox.showwarning("警告", "テキストを入力するか、ファイルを選択してください。")
