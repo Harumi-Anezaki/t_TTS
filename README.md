@@ -13,8 +13,8 @@ This application uses a portable embedded Python environment, meaning you don't 
    This will automatically download a lightweight Python environment and install all necessary dependencies into a local `bin` folder. It will not modify your system paths or registry.
 
 2. **Starting the App**
-   Double-click `run.bat`.
-   The application will start immediately. You can use this file to launch the app every time.
+   Double-click `run.vbs`.
+   The application will start immediately in the background. You can use this file to launch the app every time.
 
 ## Uninstallation
 To completely remove the application, simply delete this entire folder. Since it uses a portable environment, no leftover files or registry keys will remain on your PC.
