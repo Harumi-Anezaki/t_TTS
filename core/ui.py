@@ -56,11 +56,18 @@ class TTSUI:
         ttk.Radiobutton(lang_frame, text="男性 (Keita / Guy)", variable=self.gender_var, value="Male", bootstyle="primary").grid(row=1, column=1, padx=10)
         ttk.Radiobutton(lang_frame, text="女性 (Nanami / Aria)", variable=self.gender_var, value="Female", bootstyle="primary").grid(row=1, column=2, padx=10)
 
-        # 3. Text Input / File Load
+        # 3. Output Format
+        format_frame = ttk.Labelframe(self.root, text="3. 出力形式の選択", padding=10)
+        format_frame.pack(fill="x", pady=(0, 10))
+        self.output_format_var = ttk.StringVar(value="HTML")
+        ttk.Radiobutton(format_frame, text="音声のみ (MP3/WAV)", variable=self.output_format_var, value="MP3", bootstyle="primary").pack(side="left", padx=10)
+        ttk.Radiobutton(format_frame, text="ブラウザ再生用・ハイライト付き (HTML) ※Edge専用", variable=self.output_format_var, value="HTML", bootstyle="primary").pack(side="left", padx=10)
+
+        # 4. Text Input / File Load
         input_header_frame = ttk.Frame(self.root)
         input_header_frame.pack(fill="x", pady=(10, 0))
         
-        ttk.Label(input_header_frame, text="3. 読み上げたいテキスト (直接入力 or ファイル選択):", font=("Helvetica", 11, "bold")).pack(side="left")
+        ttk.Label(input_header_frame, text="4. 読み上げたいテキスト (直接入力 or ファイル選択):", font=("Helvetica", 11, "bold")).pack(side="left")
         
         self.load_btn = ttk.Button(input_header_frame, text="📁 ファイルを選択", bootstyle="outline-primary", command=self.load_from_file)
         self.load_btn.pack(side="right", padx=5)
@@ -82,8 +89,8 @@ class TTSUI:
         self.char_count_label = ttk.Label(self.root, text="現在の文字数: 0文字", font=("Helvetica", 10, "bold"), bootstyle="info")
         self.char_count_label.pack(anchor="e")
 
-        # 4. Parameters
-        self.param_frame = ttk.Labelframe(self.root, text="4. 変換パラメータ（自動調整 / 手動変更可）", padding=10)
+        # 5. Parameters
+        self.param_frame = ttk.Labelframe(self.root, text="5. 変換パラメータ（自動調整 / 手動変更可）", padding=10)
         self.param_frame.pack(fill="x", pady=10)
 
         ttk.Label(self.param_frame, text="処理文字数 (チャンク):").grid(row=0, column=0, sticky="e", pady=5)
@@ -100,6 +107,11 @@ class TTSUI:
         self.wait_max_var = ttk.StringVar(value="2.0")
         self.wait_max_entry = ttk.Entry(self.param_frame, textvariable=self.wait_max_var, width=10)
         self.wait_max_entry.grid(row=1, column=3, sticky="w", padx=5)
+        
+        ttk.Label(self.param_frame, text="再生速度 (倍速):").grid(row=2, column=0, sticky="e", pady=5)
+        self.speed_var = ttk.StringVar(value="2.5")
+        self.speed_entry = ttk.Combobox(self.param_frame, textvariable=self.speed_var, values=["1.0", "1.5", "2.0", "2.5", "3.0"], state="readonly", width=8)
+        self.speed_entry.grid(row=2, column=1, sticky="w", padx=5)
 
         for entry in (self.chunk_entry, self.wait_min_entry, self.wait_max_entry):
             entry.bind("<KeyRelease>", self.disable_auto_adjust)
@@ -113,12 +125,12 @@ class TTSUI:
         self.progress = ttk.Progressbar(self.root, orient="horizontal", length=100, mode="determinate", bootstyle="success-striped")
         self.progress.pack(fill="x", pady=5)
 
-        # 5. Start Button
-        self.start_btn = ttk.Button(self.root, text="音声を生成して保存", bootstyle="success", command=self.start_processing)
+        # 6. Start Button
+        self.start_btn = ttk.Button(self.root, text="処理を開始して保存", bootstyle="success", command=self.start_processing)
         self.start_btn.pack(pady=15, fill="x")
 
-        # 6. Error Log Area
-        self.error_frame = ttk.Labelframe(self.root, text="5. エラーログ (問題発生時のみ出力されます)", padding=5, bootstyle="danger")
+        # 7. Error Log Area
+        self.error_frame = ttk.Labelframe(self.root, text="7. エラーログ (問題発生時のみ出力されます)", padding=5, bootstyle="danger")
         self.error_frame.pack(fill="both", expand=True, pady=(0, 10))
 
         error_scroll = ttk.Scrollbar(self.error_frame)
@@ -254,13 +266,13 @@ class TTSUI:
         self.sanitizer.load_rules()
         
         if self.file_text is not None:
-            text = self.file_text.strip()
+            original_text = self.file_text.strip()
         else:
-            text = self.text_area.get("1.0", "end-1c").strip()
+            original_text = self.text_area.get("1.0", "end-1c").strip()
             
-        text = self.sanitizer.sanitize(text)
+        sanitized_text = self.sanitizer.sanitize(original_text)
             
-        if not text:
+        if not sanitized_text:
             # FIX: Messagebox.show_warning requires parent, title, message in ttkbootstrap (actually message, title)
             # Signature: Messagebox.show_warning(message, title="Warning", parent=None)
             Messagebox.show_warning("テキストを入力するか、ファイルを選択してください。", title="警告", parent=self.root)
@@ -269,7 +281,13 @@ class TTSUI:
         engine_choice = self.engine_var.get()
         lang_choice = self.lang_var.get()
         gender_choice = self.gender_var.get()
+        output_format = self.output_format_var.get()
+        speed = float(self.speed_var.get())
         chunk_size = w_min = w_max = 0
+
+        if output_format == "HTML" and engine_choice != "edge-tts":
+            Messagebox.show_warning("HTML出力は Edge-TTS エンジンを選択している時のみ利用可能です。", title="警告", parent=self.root)
+            return
 
         if engine_choice in ["gTTS", "edge-tts"]:
             try:
@@ -281,13 +299,19 @@ class TTSUI:
                 return
 
         default_ext = ".mp3" if engine_choice in ["gTTS", "edge-tts"] else ".wav"
-        current_time_str = datetime.now().strftime("%Y%m%d_%H%M_audio") + default_ext
+        file_types = [("Audio Files", "*.mp3 *.wav"), ("All Files", "*.*")]
+        
+        if output_format == "HTML":
+            default_ext = ".html"
+            file_types = [("HTML Files", "*.html"), ("All Files", "*.*")]
+            
+        current_time_str = datetime.now().strftime("%Y%m%d_%H%M_output") + default_ext
         
         save_path = filedialog.asksaveasfilename(
             parent=self.root,
             defaultextension=default_ext,
             initialfile=current_time_str,
-            filetypes=[("Audio Files", "*.mp3 *.wav"), ("All Files", "*.*")],
+            filetypes=file_types,
             title="保存先を選んでください"
         )
         
@@ -307,12 +331,12 @@ class TTSUI:
         
         thread = threading.Thread(
             target=self.process_thread_wrapper, 
-            args=(text, engine_choice, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path)
+            args=(original_text, sanitized_text, engine_choice, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path, output_format, speed)
         )
         thread.daemon = True
         thread.start()
 
-    def process_thread_wrapper(self, text, engine_choice, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path):
+    def process_thread_wrapper(self, original_text, sanitized_text, engine_choice, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path, output_format, speed):
         """Wrapper to instantiate engine and catch global errors."""
         try:
             if engine_choice == "edge-tts":
@@ -322,7 +346,7 @@ class TTSUI:
             else:
                 engine = Pyttsx3Engine(self.update_status_cb)
                 
-            engine.process(text, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path)
+            engine.process(original_text, sanitized_text, chunk_size, w_min, w_max, lang_choice, gender_choice, save_path, output_format=output_format, speed=speed)
             
             self.root.after(0, self.finish_processing, True, f"保存完了: {save_path}", None)
         except Exception as e:
@@ -342,6 +366,9 @@ class TTSUI:
             self.status_label.config(text="完了", bootstyle="info")
             self.progress["value"] = 100
             self.logger.clear()
+            if save_path and save_path.endswith(".html"):
+                import webbrowser
+                webbrowser.open("file://" + save_path)
             # FIX: Messagebox.show_info(message, title="Info", parent=None)
             Messagebox.show_info(message, title="完了", parent=self.root)
         else:

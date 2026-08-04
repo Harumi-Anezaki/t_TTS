@@ -2,3 +2,4 @@ gtts
 pyttsx3
 edge-tts
 ttkbootstrap
+imageio-ffmpeg

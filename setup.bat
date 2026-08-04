@@ -1,9 +1,9 @@
 @echo off
-title TTSƒAƒvƒŠ ‰ŠúƒZƒbƒgƒAƒbƒv
+title TTSã‚¢ãƒ—ãƒª åˆæœŸã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—
 echo ===================================================
-echo TTSƒAƒvƒŠ ê—p“®ìŠÂ‹«‚ÌƒZƒbƒgƒAƒbƒv‚ðŠJŽn‚µ‚Ü‚·B
-echo ‚±‚Ìˆ—‚Í‚¨Žg‚¢‚ÌPC‚ÌŠÂ‹«iƒVƒXƒeƒ€Ý’è“™j‚ðˆêØ‰˜‚³‚¸A
-echo ‚±‚ÌƒtƒHƒ‹ƒ_“àibinj‚Éê—p‚ÌÅ¬\¬Python‚ð\’z‚µ‚Ü‚·B
+echo TTSã‚¢ãƒ—ãƒª å°‚ç”¨å‹•ä½œç’°å¢ƒã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ã‚’é–‹å§‹ã—ã¾ã™ã€‚
+echo ã“ã®å‡¦ç†ã¯ãŠä½¿ã„ã®PCã®ç’°å¢ƒï¼ˆã‚·ã‚¹ãƒ†ãƒ è¨­å®šç­‰ï¼‰ã‚’ä¸€åˆ‡æ±šã•ãšã€
+echo ã“ã®ãƒ•ã‚©ãƒ«ãƒ€å†…ï¼ˆbinï¼‰ã«å°‚ç”¨ã®æœ€å°æ§‹æˆPythonã‚’æ§‹ç¯‰ã—ã¾ã™ã€‚
 echo ===================================================
 echo.
 
@@ -12,34 +12,34 @@ set PYTHON_ZIP=python-3.11.9-embed-amd64.zip
 set PYTHON_URL=https://www.python.org/ftp/python/3.11.9/%PYTHON_ZIP%
 
 if not exist "%BIN_DIR%\python.exe" goto :DOWNLOAD
-echo [î•ñ] Šù‚É bin ƒtƒHƒ‹ƒ_‚ª‘¶Ý‚µ‚Ü‚·BƒZƒbƒgƒAƒbƒv‚ðƒXƒLƒbƒv‚µ‚Ü‚·B
+echo [æƒ…å ±] æ—¢ã« bin ãƒ•ã‚©ãƒ«ãƒ€ãŒå­˜åœ¨ã—ã¾ã™ã€‚ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã¾ã™ã€‚
 goto :INSTALL_LIBS
 
 :DOWNLOAD
-echo [1/5] Œy—Ê”ÅPython (Embeddable Package) ‚ðƒ_ƒEƒ“ƒ[ƒh’†...
+echo [1/5] è»½é‡ç‰ˆPython (Embeddable Package) ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ä¸­...
 powershell -Command "Invoke-WebRequest -Uri '%PYTHON_URL%' -OutFile '%PYTHON_ZIP%'"
 
 if exist "%PYTHON_ZIP%" goto :EXTRACT
-echo [ƒGƒ‰[] ƒ_ƒEƒ“ƒ[ƒh‚ÉŽ¸”s‚µ‚Ü‚µ‚½BƒCƒ“ƒ^[ƒlƒbƒgÚ‘±‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢B
+echo [ã‚¨ãƒ©ãƒ¼] ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆæŽ¥ç¶šã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚
 pause
 exit /b 1
 
 :EXTRACT
-echo [2/5] ZIPƒtƒ@ƒCƒ‹‚ð“WŠJ’† (binƒtƒHƒ‹ƒ_‚ðì¬)...
+echo [2/5] ZIPãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ä¸­ (binãƒ•ã‚©ãƒ«ãƒ€ã‚’ä½œæˆ)...
 powershell -Command "Expand-Archive -Path '%PYTHON_ZIP%' -DestinationPath '%BIN_DIR%' -Force"
 del "%PYTHON_ZIP%"
 
-echo [3/5] GUI•`‰æ‹@”\(Tkinter)‚ð‘g‚Ýž‚ñ‚Å‚¢‚Ü‚·...
+echo [3/5] GUIæç”»æ©Ÿèƒ½(Tkinter)ã‚’çµ„ã¿è¾¼ã‚“ã§ã„ã¾ã™...
 if exist "%~dp0core\tkinter_files.zip" (
     powershell -Command "Expand-Archive -Path '%~dp0core\tkinter_files.zip' -DestinationPath '%BIN_DIR%' -Force"
 ) else (
-    echo [Œx] core\tkinter_files.zip ‚ªŒ©‚Â‚©‚ç‚È‚¢‚½‚ßGUI‚ª‹N“®‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+    echo [è­¦å‘Š] core\tkinter_files.zip ãŒè¦‹ã¤ã‹ã‚‰ãªã„ãŸã‚GUIãŒèµ·å‹•ã—ãªã„å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚
 )
 
-echo [4/5] ƒpƒbƒP[ƒWŠÇ—ƒc[ƒ‹(pip)‚ð—LŒø‰»‚µ‚Ä‚¢‚Ü‚·...
+echo [4/5] ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ç®¡ç†ãƒ„ãƒ¼ãƒ«(pip)ã‚’æœ‰åŠ¹åŒ–ã—ã¦ã„ã¾ã™...
 powershell -Command "(Get-Content '%BIN_DIR%\python311._pth') -replace '#import site', 'import site' | Set-Content '%BIN_DIR%\python311._pth'; Add-Content -Path '%BIN_DIR%\python311._pth' -Value 'Lib'"
 
-echo [5/5] pip–{‘Ì‚ðƒ_ƒEƒ“ƒ[ƒh‚µ‚ÄƒCƒ“ƒXƒg[ƒ‹’†...
+echo [5/5] pipæœ¬ä½“ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ä¸­...
 powershell -Command "Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile '%BIN_DIR%\get-pip.py'"
 "%BIN_DIR%\python.exe" "%BIN_DIR%\get-pip.py"
 del "%BIN_DIR%\get-pip.py"
@@ -47,15 +47,15 @@ del "%BIN_DIR%\get-pip.py"
 :INSTALL_LIBS
 echo.
 echo ===================================================
-echo ˆË‘¶ƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ðs‚Á‚Ä‚¢‚Ü‚·...
+echo ä¾å­˜ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’è¡Œã£ã¦ã„ã¾ã™...
 echo ===================================================
 "%BIN_DIR%\python.exe" -m pip install -r "%~dp0core\requirements.txt"
 
 echo.
 echo ===================================================
-echo [Š®—¹] ‚·‚×‚Ä‚ÌƒZƒbƒgƒAƒbƒv‚ª³í‚ÉI—¹‚µ‚Ü‚µ‚½I
+echo [å®Œäº†] ã™ã¹ã¦ã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—ãŒæ­£å¸¸ã«çµ‚äº†ã—ã¾ã—ãŸï¼
 echo ===================================================
-echo ‚±‚êˆÈ~‚Íurun.batv‚ðƒ_ƒuƒ‹ƒNƒŠƒbƒN‚·‚é‚¾‚¯‚Å
-echo ‚·‚®‚ÉƒAƒvƒŠ‚ð—˜—p‚Å‚«‚Ü‚·B
+echo ã“ã‚Œä»¥é™ã¯ã€Œrun.vbsã€ã‚’ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹ã ã‘ã§
+echo ã™ãã«ã‚¢ãƒ—ãƒªã‚’åˆ©ç”¨ã§ãã¾ã™ã€‚
 echo.
 pause

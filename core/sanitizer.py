@@ -86,9 +86,10 @@ class TextSanitizer:
         """
         rules = self.sanitize_rules
         
-        # 1. Remove URLs
+        # 1. Remove URLs and Mermaid Blocks
         if rules.get("remove_urls", True):
             text = re.sub(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", "", text)
+        text = re.sub(r'```mermaid.*?```', '', text, flags=re.DOTALL | re.IGNORECASE)
             
         # 2. Escape SSML special characters
         if rules.get("escape_ssml", True):
